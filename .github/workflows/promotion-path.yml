@@ -1,0 +1,45 @@
+name: Promotion path
+
+on:
+  pull_request:
+    branches: [main, stage, prod]
+
+permissions:
+  contents: read
+
+jobs:
+  enforce:
+    name: Enforce promotion path
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          echo "Evaluating promotion path: ${HEAD_REF} -> ${BASE_REF}"
+
+          case "${BASE_REF}" in
+            prod)
+              if [[ "${HEAD_REF}" != "stage" ]]; then
+                echo "::error::prod only accepts PRs from stage (got '${HEAD_REF}')"
+                exit 1
+              fi
+              ;;
+            stage)
+              if [[ "${HEAD_REF}" != "main" ]]; then
+                echo "::error::stage only accepts PRs from main (got '${HEAD_REF}')"
+                exit 1
+              fi
+              ;;
+            main)
+              # Feature branches and hotfixes may target main.
+              ;;
+            *)
+              echo "::error::Unexpected base branch '${BASE_REF}'"
+              exit 1
+              ;;
+          esac
+
+          echo "OK: ${HEAD_REF} -> ${BASE_REF}"
