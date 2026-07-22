@@ -1,8 +1,10 @@
 name: Promotion path
 
+# Ruleset-required workflows only support pull_request / pull_request_target / merge_group.
+# Branch/path filters are ignored when the workflow is required by a ruleset.
 on:
   pull_request:
-    branches: [main, stage, prod]
+  merge_group:
 
 permissions:
   contents: read
@@ -16,9 +18,18 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
           HEAD_REF: ${{ github.head_ref }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          echo "Evaluating promotion path: ${HEAD_REF} -> ${BASE_REF}"
+
+          if [[ "${EVENT_NAME}" == "merge_group" ]]; then
+            BASE_REF="${{ github.event.merge_group.base_ref }}"
+            BASE_REF="${BASE_REF#refs/heads/}"
+            HEAD_REF="${{ github.event.merge_group.head_ref }}"
+            HEAD_REF="${HEAD_REF#refs/heads/}"
+          fi
+
+          echo "Evaluating promotion path: ${HEAD_REF} -> ${BASE_REF} (event=${EVENT_NAME})"
 
           case "${BASE_REF}" in
             prod)
