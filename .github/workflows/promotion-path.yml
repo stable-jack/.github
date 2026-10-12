@@ -33,8 +33,7 @@ jobs:
 
           case "${BASE_REF}" in
             prod)
-              # downtime-notice-prod is the 12 Oct 2026 maintenance banner only.
-              if [[ "${HEAD_REF}" != "stage" && "${HEAD_REF}" != "downtime-notice-prod" ]]; then
+              if [[ "${HEAD_REF}" != "stage" ]]; then
                 echo "::error::prod only accepts PRs from stage (got '${HEAD_REF}')"
                 exit 1
               fi
