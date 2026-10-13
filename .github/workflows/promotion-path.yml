@@ -33,8 +33,7 @@ jobs:
 
           case "${BASE_REF}" in
             prod)
-              # remove-downtime-notice takes the maintenance banner off prod.
-              if [[ "${HEAD_REF}" != "stage" && "${HEAD_REF}" != "remove-downtime-notice" ]]; then
+              if [[ "${HEAD_REF}" != "stage" ]]; then
                 echo "::error::prod only accepts PRs from stage (got '${HEAD_REF}')"
                 exit 1
               fi
